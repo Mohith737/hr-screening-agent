@@ -1,4 +1,4 @@
----
+&nbsp;
 
 ## Trade-offs and Shortcuts
 
@@ -16,7 +16,7 @@ version would have role-based access so only HR staff can trigger calls.
 **Single agent:** One Bolna agent handles all roles. Production 
 would have role-specific agents with tailored questions.
 
----
+&nbsp;
 
 ## What I Would Add With More Time
 
