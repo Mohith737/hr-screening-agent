@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
 export default function App() {
   const [candidates, setCandidates] = useState([]);
   const [selectedCandidate, setSelectedCandidate] = useState(null);
@@ -11,7 +13,7 @@ export default function App() {
 
   useEffect(() => {
     async function loadCandidates() {
-      const response = await fetch("http://localhost:3001/api/candidates");
+      const response = await fetch(`${API_URL}/api/candidates`);
       const data = await response.json();
       setCandidates(data);
     }
@@ -24,7 +26,7 @@ export default function App() {
     setError(null);
 
     try {
-      const response = await fetch("http://localhost:3001/api/trigger-call", {
+      const response = await fetch(`${API_URL}/api/trigger-call`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -56,7 +58,7 @@ export default function App() {
   async function fetchResults(candidateId) {
     try {
       const response = await fetch(
-        `http://localhost:3001/api/results/${candidateId}`
+        `${API_URL}/api/results/${candidateId}`
       );
       const data = await response.json();
 
