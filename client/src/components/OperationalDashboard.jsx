@@ -54,73 +54,144 @@ export default function OperationalDashboard({ data, candidates, onSelectCandida
   const attention = candidates.filter((candidate) =>
     candidate.displayStatus?.code === 'failed' || (candidate.canTriggerScreening && daysSince(candidate.appliedDate) >= 3))
   const recentActivity = data.recentActivity || []
+  const avgScore = data.averageScore || 0
+  const topRoleAvg = Math.max(...roleHealth.map((role) => Number.isFinite(role.avg) ? role.avg : 0))
+  const showActionGrid = attention.length > 0 && advancing.length > 0
 
   return (
-    <div>
+    <div className="dashboard-flow" style={{ maxWidth: '1100px' }}>
       <div className="metric-strip">
         <div className="metric-block"><div className="metric-number">{pipeline.total ?? 0}</div><div className="metric-label">Total Candidates</div></div>
-        <div className="metric-block"><div className={`metric-number ${pipeline.completed > 0 ? 'text-green' : ''}`}>{pipeline.completed ?? 0}</div><div className="metric-label">Interviewed</div></div>
-        <div className="metric-block"><div className={`metric-number ${pipeline.screening > 0 ? 'text-blue' : ''}`}>{pipeline.screening ?? 0}</div><div className="metric-label">In Progress</div></div>
-        <div className="metric-block"><div className="metric-number text-green">{advancing.length}</div><div className="metric-label">Advancing</div></div>
-        <div className="metric-block"><div className="metric-number">{data.averageScore || '-'}</div><div className="metric-label">Avg Score</div></div>
+        <div className={`metric-block ${pipeline.completed > 0 ? 'has-value-green' : ''}`}><div className={`metric-number ${pipeline.completed > 0 ? 'text-green' : ''}`}>{pipeline.completed ?? 0}</div><div className="metric-label">Interviewed</div></div>
+        <div className={`metric-block ${pipeline.screening > 0 ? 'has-value-blue' : ''}`}><div className={`metric-number ${pipeline.screening > 0 ? 'text-blue' : ''}`}>{pipeline.screening ?? 0}</div><div className="metric-label">In Progress</div></div>
+        <div className={`metric-block ${advancing.length > 0 ? 'has-value-green' : ''}`}><div className="metric-number text-green">{advancing.length}</div><div className="metric-label">Advancing</div></div>
+        <div className={`metric-block ${avgScore >= 70 ? 'has-value-green' : avgScore >= 50 ? 'has-value-yellow' : avgScore > 0 ? 'has-value-red' : ''}`}><div className="metric-number">{data.averageScore || '-'}</div><div className="metric-label">Avg Score</div></div>
       </div>
       <div className="meta" style={{ textAlign: 'center', padding: '0 0 20px' }}>
         AI-powered recruiter intelligence - prioritize faster, decide with confidence.
       </div>
-      <section className="attention-zone section">
-        <p className="section-label">Requires Recruiter Action</p>
-        {attention.length === 0 ? <div className="text-green font-semibold">Your pipeline is on track - no urgent actions needed</div> : (
-          <div className="grid-3">
-            {attention.map((candidate) => (
-              <button className="compact-action-card card-clickable" key={candidate.id} onClick={() => onSelectCandidate(candidate.id)} type="button">
-                <div className="font-semibold">{candidate.name || 'Unnamed candidate'}</div>
-                <div className="text-sm text-secondary">{candidate.role || 'Role unavailable'}</div>
-                <div className="text-red text-sm mt-8">{candidate.displayStatus?.code === 'failed' ? 'Interview call failed - Retry interview call' : 'Not yet interviewed'}</div>
-              </button>
+      <div className="dashboard-divider" />
+      <div className={showActionGrid ? 'dashboard-action-grid' : ''}>
+        <section className="attention-zone section dashboard-section">
+          <div className="dashboard-zone-label dashboard-zone-label-red">
+            <span>!</span>
+            <span>REQUIRES RECRUITER ACTION</span>
+            {attention.length > 0 && <span className="dashboard-zone-count dashboard-zone-count-red">{attention.length}</span>}
+          </div>
+          {attention.length === 0 ? (
+            <EmptyState
+              icon="✓"
+              title="Pipeline on track"
+              subtitle="No urgent actions needed right now."
+              action="Interviews in progress will appear here."
+            />
+          ) : (
+            <div className="grid-3">
+              {attention.map((candidate) => (
+                <button className="compact-action-card card-clickable" key={candidate.id} onClick={() => onSelectCandidate(candidate.id)} type="button">
+                  <div className="font-semibold">{candidate.name || 'Unnamed candidate'}</div>
+                  <div className="text-sm text-secondary">{candidate.role || 'Role unavailable'}</div>
+                  <div className="text-red text-sm mt-8">{candidate.displayStatus?.code === 'failed' ? 'Interview connection failed - retry when ready' : 'Not yet interviewed'}</div>
+                </button>
+              ))}
+            </div>
+          )}
+        </section>
+        <section className="advance-zone section dashboard-section dashboard-section-related">
+          <div className="dashboard-zone-label dashboard-zone-label-green">
+            <span>READY TO ADVANCE</span>
+            {advancing.length > 0 && <span className="dashboard-zone-count dashboard-zone-count-green">{advancing.length}</span>}
+          </div>
+          {advancing.length === 0 ? (
+            <EmptyState
+              icon=""
+              title="No candidates ready to advance yet"
+              subtitle="Complete more interviews to surface top candidates."
+              action="Start an AI interview from any pending candidate."
+            />
+          ) : (
+            <div className="grid-3">
+              {[...advancing]
+                .sort((a, b) => (b.scoreDisplay?.value ?? 0) - (a.scoreDisplay?.value ?? 0))
+                .map((candidate) => (
+                  <button className="compact-action-card card-clickable" key={candidate.id} onClick={() => onSelectCandidate(candidate.id)} type="button">
+                    <div className="flex items-center justify-between gap-12 mb-8">
+                      <div><div className="font-semibold">{candidate.name || 'Unnamed candidate'}</div><div className="text-sm text-secondary">{candidate.role || 'Role unavailable'}</div></div>
+                      <ScoreBadge scoreDisplay={candidate.scoreDisplay} size="compact" />
+                    </div>
+                    <span className={`badge badge-${candidate.recommendationBadge?.color || 'gray'}`}>{candidate.recommendationBadge?.label || 'Pending'}</span>
+                    <div className="text-sm text-secondary mt-8">Open candidate decision</div>
+                  </button>
+                ))}
+            </div>
+          )}
+        </section>
+      </div>
+      <div className="dashboard-divider" />
+      <section className="card section dashboard-section">
+        <p className="section-label">Role Pipeline Health</p>
+        <div className="role-health-table">
+          <div className="role-health-row role-health-header">
+            <span>Role</span>
+            <span>Progress</span>
+            <span>Avg</span>
+            <span>Pending</span>
+          </div>
+          {roleHealth.map((role) => (
+            <div className="role-health-row" key={role.role}>
+              <span className="role-health-label">{role.role}</span>
+              <span style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <span className="role-health-progress">{role.interviewed}/{role.total} interviewed</span>
+                <span className="role-health-progress-track">
+                  <span
+                    className="role-health-progress-fill"
+                    style={{
+                      width: role.total > 0 ? `${Math.round((role.interviewed / role.total) * 100)}%` : '0%',
+                      background: role.interviewed === role.total ? 'var(--green)' : 'var(--blue)',
+                    }}
+                  />
+                </span>
+              </span>
+              <span
+                className="role-health-score"
+                style={{ color: !Number.isFinite(role.avg) ? 'var(--text-muted)' : role.avg >= 75 ? 'var(--green)' : role.avg >= 50 ? 'var(--yellow)' : 'var(--red)' }}
+              >
+                {role.avg || '-'}
+                {Number.isFinite(role.avg) && role.avg === topRoleAvg && topRoleAvg > 0 && (
+                  <span className="role-health-top-label">TOP</span>
+                )}
+              </span>
+              <span className="role-health-pending">{role.pending}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+      <div className="dashboard-divider" />
+      <section className="card section dashboard-section">
+        <p className="section-label">Interview Outcomes</p>
+        {recentActivity.length === 0 ? <EmptyState title="No recent interview activity" /> : (
+          <div className="activity-table">
+            {recentActivity.map((item) => (
+              <div className="activity-row" key={item.screeningId}>
+                <div>
+                  <div className="activity-candidate-name">{item.candidateName || 'Unnamed candidate'}</div>
+                  <div className="activity-candidate-role">{item.candidateRole || 'Role unavailable'}</div>
+                  {item.recommendationBadge?.color === 'red' && (
+                    <span className="activity-outcome-note text-red">Not advancing</span>
+                  )}
+                  {item.recommendationBadge?.color === 'green' && (
+                    <span className="activity-outcome-note text-green">Advancing</span>
+                  )}
+                </div>
+                <div className={`activity-score bg-${item.recommendationBadge?.color || 'gray'}`}>{item.overallScore ?? '--'}</div>
+                <div className="activity-badge">
+                  <span className={`badge badge-${item.recommendationBadge?.color || 'gray'}`}>{item.recommendationBadge?.label || 'Pending'}</span>
+                </div>
+                <span className="activity-time">{formatTimeAgo(item.completedAt)}</span>
+              </div>
             ))}
           </div>
         )}
-      </section>
-      <section className="advance-zone section">
-        <p className="section-label">Ready to Advance</p>
-        {advancing.length === 0 ? <div className="text-secondary">Complete more interviews to surface advancement candidates</div> : (
-          <div className="grid-3">
-            {[...advancing]
-              .sort((a, b) => (b.scoreDisplay?.value ?? 0) - (a.scoreDisplay?.value ?? 0))
-              .map((candidate) => (
-                <button className="compact-action-card card-clickable" key={candidate.id} onClick={() => onSelectCandidate(candidate.id)} type="button">
-                  <div className="flex items-center justify-between gap-12 mb-8">
-                    <div><div className="font-semibold">{candidate.name || 'Unnamed candidate'}</div><div className="text-sm text-secondary">{candidate.role || 'Role unavailable'}</div></div>
-                    <ScoreBadge scoreDisplay={candidate.scoreDisplay} size="compact" />
-                  </div>
-                  <span className={`badge badge-${candidate.recommendationBadge?.color || 'gray'}`}>{candidate.recommendationBadge?.label || 'Pending'}</span>
-                  <div className="text-sm text-secondary mt-8">Open candidate decision</div>
-                </button>
-              ))}
-          </div>
-        )}
-      </section>
-      <section className="card section">
-        <p className="section-label">Role Pipeline Health</p>
-        {roleHealth.map((role) => (
-          <div className="flex items-center justify-between divider" key={role.role}>
-            <strong>{role.role}</strong>
-            <span className="text-secondary">{role.interviewed}/{role.total} interviewed</span>
-            <span className="text-secondary">Avg {role.avg}</span>
-            <span className="text-secondary">{role.pending} pending</span>
-          </div>
-        ))}
-      </section>
-      <section className="card section">
-        <p className="section-label">Recent Interview Activity</p>
-        {recentActivity.length === 0 ? <EmptyState title="No recent interview activity" /> : recentActivity.map((item) => (
-          <div className="flex items-center justify-between divider" key={item.screeningId}>
-            <div><div className="font-semibold">{item.candidateName || 'Unnamed candidate'}</div><div className="text-sm text-secondary">{item.candidateRole || 'Role unavailable'}</div></div>
-            <ScoreBadge scoreDisplay={{ value: item.overallScore ?? null, color: item.recommendationBadge?.color || 'gray' }} size="compact" />
-            <span className={`badge badge-${item.recommendationBadge?.color || 'gray'}`}>{item.recommendationBadge?.label || 'Pending'}</span>
-            <span className="text-sm text-muted">{formatTimeAgo(item.completedAt)}</span>
-          </div>
-        ))}
       </section>
     </div>
   )

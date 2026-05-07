@@ -49,7 +49,7 @@ export default function Sidebar({
         ))}
       </div>
       {comparisonCandidates.length >= 2 && (
-        <div className="comparison-bar">
+        <div className="comparison-bar sidebar-comparison-bar">
           <div className="flex items-center justify-between gap-8">
             <div>
               <div className="font-semibold">Compare {comparisonCandidates.length} candidates</div>

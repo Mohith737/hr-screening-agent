@@ -40,7 +40,7 @@ export default function TranscriptPanel({ screening, intelligenceReport }) {
   return (
     <section className="card section">
       <button className="btn btn-ghost" onClick={() => setIsOpen(!isOpen)} type="button">
-        {isOpen ? 'Hide Interview Conversation' : 'View Interview Conversation'}
+        {isOpen ? 'Hide Analyzed Transcript' : 'View Analyzed Transcript'}
       </button>
       {isOpen && (
         <div className="mt-12">
@@ -52,18 +52,28 @@ export default function TranscriptPanel({ screening, intelligenceReport }) {
           )}
           {error && <EmptyState title={error} />}
           {!loading && !error && (!screening?.hasTranscript || !turns?.length) && (
-            <EmptyState title="Interview recording was not captured for this session" />
+            <EmptyState
+              title="Transcript not available for this interview"
+              subtitle="This may occur when a call ends early or the connection was interrupted."
+            />
           )}
           {!loading && !error && turns?.length > 0 && (
-            <div className="transcript-container">
-              {turns.map((turn, index) => (
-                <TranscriptMessage
-                  key={`${turn.speaker || turn.role || 'candidate'}-${index}`}
-                  turn={{ speaker: turn.speaker || turn.role || 'candidate', text: turn.text || turn.content || '' }}
-                  isEvidenceMatch={isEvidenceMatch(turn.text || turn.content)}
-                />
-              ))}
-            </div>
+            <>
+              <div className="transcript-summary-row">
+                <span>
+                  Interview transcript • {turns.length} exchanges • {turns.filter((turn) => (turn.speaker || turn.role) !== 'agent').length} candidate responses analyzed
+                </span>
+              </div>
+              <div className="transcript-container">
+                {turns.map((turn, index) => (
+                  <TranscriptMessage
+                    key={`${turn.speaker || turn.role || 'candidate'}-${index}`}
+                    turn={{ speaker: turn.speaker || turn.role || 'candidate', text: turn.text || turn.content || '' }}
+                    isEvidenceMatch={isEvidenceMatch(turn.text || turn.content)}
+                  />
+                ))}
+              </div>
+            </>
           )}
         </div>
       )}

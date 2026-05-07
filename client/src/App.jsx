@@ -75,7 +75,7 @@ export default function App() {
       <main className="main-content">
         {view === 'dashboard'
           ? <OperationalDashboard data={dashboardData} candidates={candidates} onSelectCandidate={handleSelectCandidate} />
-          : <CandidateView candidateId={selectedCandidateId} triggeringId={triggeringId} onStartScreening={handleStartScreening} />}
+          : <CandidateView candidateId={selectedCandidateId} triggeringId={triggeringId} onStartScreening={handleStartScreening} allCandidates={candidates} />}
       </main>
       {showComparison && comparisonIds.length >= 2 && <ComparisonDrawer candidateIds={comparisonIds} onClose={() => setShowComparison(false)} />}
     </div>

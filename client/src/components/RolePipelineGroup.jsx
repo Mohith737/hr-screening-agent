@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react'
-import ScoreBadge from './ScoreBadge'
 import SortControl from './SortControl'
 
 const recommendationRank = { green: 0, yellow: 1, red: 2, gray: 3 }
@@ -32,13 +31,13 @@ export default function RolePipelineGroup({
   const advancing = candidates.filter((candidate) => candidate.recommendationBadge?.label === 'Strong Fit').length
   const pending = candidates.filter((candidate) => candidate.displayStatus?.code === 'pending').length
   const statusLabel = (candidate) =>
-    candidate.displayStatus?.code === 'failed' ? 'Interview call failed' : candidate.displayStatus?.label || 'Unknown status'
+    candidate.displayStatus?.code === 'failed' ? 'Interview connection unsuccessful' : candidate.displayStatus?.label || 'Unknown status'
 
   return (
     <section className="role-group">
       <div className="role-group-header" onClick={() => setIsOpen(!isOpen)}>
         <span>{isOpen ? 'v' : '>'} {role}</span>
-        <span>{candidates.length}</span>
+        <span className="role-group-count">{candidates.length}</span>
       </div>
       <div className="role-group-candidates" style={{ maxHeight: isOpen ? '1000px' : '0' }}>
         <SortControl value={sortBy} onChange={setSortBy} />
@@ -58,18 +57,23 @@ export default function RolePipelineGroup({
               onClick={(event) => event.stopPropagation()}
               type="checkbox"
             />
-            <div className="flex items-center justify-between gap-8">
-              <div className="truncate">
-                <div className="sidebar-candidate-name">{candidate.name || 'Unnamed candidate'}</div>
-                <div className="sidebar-candidate-meta">{statusLabel(candidate)}</div>
-              </div>
-              <ScoreBadge scoreDisplay={candidate.scoreDisplay} size="compact" />
+            <div className="sidebar-candidate-row">
+              <span className="sidebar-candidate-name">{candidate.name || 'Unnamed candidate'}</span>
+              {candidate.scoreDisplay?.value != null && (
+                <div className={`sidebar-score-compact bg-${candidate.scoreDisplay?.color || 'gray'}`}>
+                  {candidate.scoreDisplay?.value}
+                </div>
+              )}
             </div>
-            <div className="flex items-center gap-8 mt-8">
-              <span className={`badge badge-${candidate.recommendationBadge?.color || 'gray'}`}>
-                {candidate.recommendationBadge?.label || 'Pending'}
+            <div className="sidebar-candidate-row">
+              <span style={{ fontSize: '11px', color: 'var(--text-sidebar-muted)' }}>
+                {statusLabel(candidate)}
               </span>
-              <span className={`status-dot bg-${candidate.displayStatus?.color || 'gray'}`} />
+              <div className="sidebar-candidate-badges">
+                <span className={`badge badge-${candidate.recommendationBadge?.color || 'gray'}`} style={{ fontSize: '10px', padding: '1px 6px' }}>
+                  {candidate.recommendationBadge?.label || 'Pending'}
+                </span>
+              </div>
             </div>
           </div>
         ))}

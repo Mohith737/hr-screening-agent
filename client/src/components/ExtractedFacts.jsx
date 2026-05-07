@@ -9,7 +9,7 @@ export default function ExtractedFacts({ extractedFacts = {}, language }) {
 
   return (
     <div>
-      <div className="section-title">Extracted Facts</div>
+      <div className="field-label" style={{ marginBottom: '14px' }}>Candidate Profile</div>
       <div className="facts-grid">
         {facts.map(([key, value]) => (
           <div key={key}>

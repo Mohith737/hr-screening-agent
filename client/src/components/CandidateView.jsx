@@ -18,7 +18,7 @@ const dimensionLabels = {
   problemSolving: 'Problem Solving',
 }
 
-export default function CandidateView({ candidateId, triggeringId, onStartScreening }) {
+export default function CandidateView({ candidateId, triggeringId, onStartScreening, allCandidates = [] }) {
   const [detail, setDetail] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -72,12 +72,16 @@ export default function CandidateView({ candidateId, triggeringId, onStartScreen
   const report = detail.intelligenceReport
 
   return (
-    <div style={loading ? { opacity: 0.6, pointerEvents: 'none' } : undefined}>
+    <div
+      className="candidate-detail-panel"
+      style={loading ? { opacity: 0.55, pointerEvents: 'none', transition: 'opacity 0.15s ease' } : { opacity: 1, transition: 'opacity 0.2s ease' }}
+    >
       <DecisionZone
         candidate={detail.candidate}
         report={report}
         isTriggering={triggeringId === candidateId}
         onStartScreening={() => onStartScreening(candidateId)}
+        allCandidates={allCandidates}
       />
       {report && (
         <>
@@ -87,9 +91,11 @@ export default function CandidateView({ candidateId, triggeringId, onStartScreen
           </div>
           <div className="card section">
             <p className="section-label">Dimension Scores</p>
-            {Object.entries(dimensionLabels).map(([key, label]) => (
-              <DimensionBar key={key} label={label} scoreObj={report.scores[key]} />
-            ))}
+            <div className="dimension-bars-container">
+              {Object.entries(dimensionLabels).map(([key, label]) => (
+                <DimensionBar key={key} label={label} scoreObj={report.scores[key]} />
+              ))}
+            </div>
           </div>
           <div className="grid-2 section">
             <section className="card">

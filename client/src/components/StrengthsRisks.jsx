@@ -5,8 +5,8 @@ export default function StrengthsRisks({ strengths = [], risks = [] }) {
       {strengths.length === 0 ? (
         <div className="text-muted text-sm">None identified</div>
       ) : strengths.map((item) => (
-        <div className="list-line" key={item}>
-          <span className="color-green">✓</span>
+        <div className="strength-item" key={item}>
+          <span className="strength-icon">+</span>
           <span>{item}</span>
         </div>
       ))}
@@ -15,8 +15,8 @@ export default function StrengthsRisks({ strengths = [], risks = [] }) {
       {risks.length === 0 ? (
         <div className="text-muted text-sm">None identified</div>
       ) : risks.map((item) => (
-        <div className="list-line" key={item}>
-          <span className="color-yellow">⚠</span>
+        <div className="risk-item" key={item}>
+          <span className="risk-icon">!</span>
           <span>{item}</span>
         </div>
       ))}
