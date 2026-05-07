@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HR Screening Agent Deck</title>
+  <style>
+    body {
+      margin: 0;
+      background: #ffffff;
+      color: #1a1a2e;
+      font-family: system-ui, sans-serif;
+    }
+
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 32px 24px 64px;
+    }
+
+    .slide {
+      padding: 48px 24px;
+    }
+
+    h1,
+    h2 {
+      color: #4f46e5;
+      margin: 0 0 16px;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+    }
+
+    h2 {
+      font-size: 2rem;
+    }
+
+    p,
+    li {
+      font-size: 1.1rem;
+      line-height: 1.7;
+      margin: 0 0 12px;
+    }
+
+    .subtitle {
+      font-size: 1.25rem;
+      margin-bottom: 12px;
+    }
+
+    .author {
+      color: #4f46e5;
+      font-weight: 600;
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 24px;
+    }
+
+    hr {
+      border: 0;
+      border-top: 1px solid #d4d4d8;
+      margin: 0;
+    }
+
+    @media print {
+      .slide {
+        page-break-after: always;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="slide">
+      <h1>HR Screening Agent</h1>
+      <p class="subtitle">AI-powered first-round candidate screening using Bolna Voice AI</p>
+      <p class="author">Built by Mohith | Full Stack Engineer Intern</p>
+    </section>
+
+    <hr />
+
+    <section class="slide">
+      <h2>The Problem</h2>
+      <ul>
+        <li>Recruiters spend 15+ minutes per candidate on repetitive screening calls</li>
+        <li>20 candidates per role = 5+ hours of low-value recruiter time</li>
+        <li>Manual screening is inconsistent, unscalable, and slow</li>
+      </ul>
+    </section>
+
+    <hr />
+
+    <section class="slide">
+      <h2>The Solution</h2>
+      <ul>
+        <li>Voice AI agent that conducts structured screening calls autonomously</li>
+        <li>HR triggers call from dashboard agent calls candidate transcript returned automatically</li>
+        <li>Outcome: first-round screen time reduced from 15 min to zero</li>
+      </ul>
+    </section>
+
+    <hr />
+
+    <section class="slide">
+      <h2>Tech Stack</h2>
+      <ul>
+        <li>Bolna Voice AI — conducts the call, returns transcript via webhook</li>
+        <li>React + Vite — HR dashboard frontend</li>
+        <li>Node.js + Express — API server and webhook receiver</li>
+        <li>Render — cloud deployment</li>
+      </ul>
+    </section>
+
+    <hr />
+
+    <section class="slide">
+      <h2>Live Demo</h2>
+      <ul>
+        <li>Dashboard: https://hr-screening-client.onrender.com</li>
+        <li>GitHub: https://github.com/Mohith737/hr-screening-agent</li>
+        <li>Agent asks 5 structured questions</li>
+        <li>Browser testing available without phone credits</li>
+      </ul>
+    </section>
+
+    <hr />
+
+    <section class="slide">
+      <h2>What I Would Add Next</h2>
+      <ul>
+        <li>ATS integration (Greenhouse, Lever)</li>
+        <li>Role-specific question sets per job function</li>
+        <li>LLM scoring of candidate answers</li>
+        <li>Email notifications and calendar auto-scheduling</li>
+      </ul>
+    </section>
+  </main>
+</body>
+</html>

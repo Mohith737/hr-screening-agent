@@ -1,39 +1,45 @@
-import fetch from 'node-fetch';
+import fetch from "node-fetch";
 
-export async function triggerScreeningCall(candidate) {
-  const agentId = "ab272a30-9405-4c18-8297-173a0eeac823";
-  const apiKey = process.env.BOLNA_API_KEY;
+export async function triggerScreeningCall(candidate, screeningId) {
+  if (!process.env.BOLNA_API_KEY) {
+    throw new Error("Missing BOLNA_API_KEY");
+  }
 
-  console.log('Agent ID:', agentId);
-  console.log('API Key:', apiKey ? 'loaded' : 'MISSING');
+  if (!process.env.BOLNA_AGENT_ID) {
+    throw new Error("Missing BOLNA_AGENT_ID");
+  }
 
-  const body = JSON.stringify({
-    agent_id: agentId,
+  const payload = {
+    agent_id: process.env.BOLNA_AGENT_ID,
     recipient_phone_number: candidate.phone,
     user_data: {
       candidate_name: candidate.name,
-      candidate_role: candidate.role
+      candidate_role: candidate.role,
+      candidate_id: candidate.id,
+      screening_id: screeningId,
+      language_preference: candidate.language_preference
     }
-  });
+  };
 
-  console.log('Sending body:', body);
-
-  const response = await fetch('https://api.bolna.dev/call', {
-    method: 'POST',
+  const response = await fetch("https://api.bolna.dev/call", {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${process.env.BOLNA_API_KEY}`
     },
-    body: body
+    body: JSON.stringify(payload)
   });
 
   const responseText = await response.text();
-  console.log('Bolna status:', response.status);
-  console.log('Bolna body:', responseText);
 
   if (!response.ok) {
-    throw new Error(`Bolna API error: ${responseText}`);
+    throw new Error(`Bolna API error (${response.status}): ${responseText}`);
   }
 
-  return JSON.parse(responseText);
+  const responseJson = JSON.parse(responseText);
+
+  return {
+    success: true,
+    bolnaCallId: responseJson.call_id
+  };
 }

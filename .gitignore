@@ -3,6 +3,7 @@ node_modules/
 
 # Environment variables
 .env
+server/hiring.db
 
 # Build output
 dist/
