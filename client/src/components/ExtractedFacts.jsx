@@ -1,10 +1,10 @@
 export default function ExtractedFacts({ extractedFacts = {}, language }) {
   const facts = [
-    ['Experience', extractedFacts.yearsExperience ? `${extractedFacts.yearsExperience} years` : '—'],
-    ['Location', extractedFacts.location || '—'],
-    ['Language', language || '—'],
-    ['Notice Period', extractedFacts.noticePeriodDays ? `${extractedFacts.noticePeriodDays} days` : '—'],
-    ['Salary Exp', extractedFacts.salaryExpectation || '—'],
+    ['Experience', extractedFacts.yearsExperience ? `${extractedFacts.yearsExperience} years` : '-'],
+    ['Location', extractedFacts.location || '-'],
+    ['Language', language || '-'],
+    ['Notice Period', extractedFacts.noticePeriodDays ? `${extractedFacts.noticePeriodDays} days` : '-'],
+    ['Salary Exp', extractedFacts.salaryExpectation || '-'],
   ]
 
   return (

@@ -25,7 +25,7 @@ export default function AnalysisScorecard({ report }) {
           <span className={`badge bg-${report.recommendationBadge?.color || 'gray'}`}>
             {report.recommendationBadge?.label || 'Pending'}
           </span>
-          <p className="summary-quote">{report.recruiterSummary || 'No summary available.'}</p>
+          <p className="summary-quote">{report.recruiterSummary || 'Interview summary not yet available.'}</p>
         </div>
       </div>
       <div className="divider" />

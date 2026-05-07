@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react'
 import './App.css'
 import { getCandidates, getDashboard, startScreening } from './api'
 import Sidebar from './components/Sidebar'
-import DashboardView from './components/DashboardView'
 import CandidateView from './components/CandidateView'
+import OperationalDashboard from './components/OperationalDashboard'
+import ComparisonDrawer from './components/ComparisonDrawer'
 
 export default function App() {
   const [view, setView] = useState('dashboard')
@@ -11,6 +12,8 @@ export default function App() {
   const [candidates, setCandidates] = useState([])
   const [dashboardData, setDashboardData] = useState(null)
   const [triggeringId, setTriggeringId] = useState(null)
+  const [comparisonIds, setComparisonIds] = useState([])
+  const [showComparison, setShowComparison] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -20,33 +23,22 @@ export default function App() {
         setCandidates(candidateData)
         setDashboardData(dashboard)
       })
-      .catch((error) => console.error(error))
-    return () => {
-      cancelled = true
-    }
+      .catch(() => {})
+    return () => { cancelled = true }
   }, [])
 
   useEffect(() => {
     if (!candidates.some((c) => c.displayStatus?.code === 'screening')) return
-
     const intervalId = setInterval(async () => {
       try {
         const updated = await getCandidates()
-        const selectedWasScreening = candidates.some((c) =>
-          c.id === selectedCandidateId && c.displayStatus?.code === 'screening')
-        const selectedIsCompleted = updated.some((c) =>
-          c.id === selectedCandidateId && c.displayStatus?.code === 'completed')
-
         setCandidates(updated)
         if (!updated.some((c) => c.displayStatus?.code === 'screening')) clearInterval(intervalId)
-        if (selectedWasScreening && selectedIsCompleted) setDashboardData(await getDashboard())
-      } catch (error) {
-        console.error(error)
+      } catch {
       }
     }, 12000)
-
     return () => clearInterval(intervalId)
-  }, [candidates, selectedCandidateId])
+  }, [candidates])
 
   function handleSelectCandidate(id) {
     setView('candidate')
@@ -58,13 +50,20 @@ export default function App() {
     setSelectedCandidateId(null)
   }
 
+  function handleToggleCompare(candidateId) {
+    setComparisonIds((ids) => {
+      if (ids.includes(candidateId)) return ids.filter((id) => id !== candidateId)
+      if (ids.length >= 3) return ids
+      return [...ids, candidateId]
+    })
+  }
+
   async function handleStartScreening(candidateId) {
     setTriggeringId(candidateId)
     try {
       await startScreening(candidateId)
       setCandidates(await getCandidates())
-    } catch (error) {
-      console.error(error)
+    } catch {
     } finally {
       setTriggeringId(null)
     }
@@ -72,12 +71,13 @@ export default function App() {
 
   return (
     <div className="app-layout">
-      <Sidebar candidates={candidates} selectedId={selectedCandidateId} onSelect={handleSelectCandidate} onDashboard={handleGoToDashboard} view={view} />
+      <Sidebar candidates={candidates} selectedId={selectedCandidateId} comparisonIds={comparisonIds} onSelect={handleSelectCandidate} onDashboard={handleGoToDashboard} onToggleCompare={handleToggleCompare} onOpenComparison={() => setShowComparison(true)} onClearComparison={() => setComparisonIds([])} view={view} />
       <main className="main-content">
         {view === 'dashboard'
-          ? <DashboardView data={dashboardData} onSelectCandidate={handleSelectCandidate} />
+          ? <OperationalDashboard data={dashboardData} candidates={candidates} onSelectCandidate={handleSelectCandidate} />
           : <CandidateView candidateId={selectedCandidateId} triggeringId={triggeringId} onStartScreening={handleStartScreening} />}
       </main>
+      {showComparison && comparisonIds.length >= 2 && <ComparisonDrawer candidateIds={comparisonIds} onClose={() => setShowComparison(false)} />}
     </div>
   )
 }
