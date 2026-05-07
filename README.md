@@ -136,7 +136,7 @@ npm install
 npm run dev
 ```
 
-The API runs on `http://localhost:3001` by default. The client runs on `http://localhost:5173`.
+For local development, run the API and client in separate terminals using the commands above.
 
 SQLite initializes and seeds automatically on server start.
 
@@ -152,7 +152,7 @@ GROQ_API_KEY=your Groq API key
 PORT=3001
 
 client/.env
-VITE_API_URL=http://localhost:3001
+# The deployed hackathon demo is static and does not require a client API URL.
 ```
 
 The seeded demo data can run without external credentials. Live outbound interviews require provider configuration.

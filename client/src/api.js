@@ -1,35 +1,31 @@
-const BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+import {
+  createDemoScreening,
+  getDemoCandidate,
+  getDemoCandidates,
+  getDemoDashboard,
+  getDemoScreening,
+} from './demoData'
+
+function resolveDemo(value) {
+  return Promise.resolve(value)
+}
 
 export async function getDashboard() {
-  const response = await fetch(`${BASE}/api/dashboard/summary`)
-  if (!response.ok) throw new Error(`API error ${response.status}: ${response.statusText}`)
-  return response.json()
+  return resolveDemo(getDemoDashboard())
 }
 
 export async function getCandidates() {
-  const response = await fetch(`${BASE}/api/candidates`)
-  if (!response.ok) throw new Error(`API error ${response.status}: ${response.statusText}`)
-  return response.json()
+  return resolveDemo(getDemoCandidates())
 }
 
 export async function getCandidate(candidateId) {
-  const response = await fetch(`${BASE}/api/candidates/${candidateId}`)
-  if (!response.ok) throw new Error(`API error ${response.status}: ${response.statusText}`)
-  return response.json()
+  return resolveDemo(getDemoCandidate(candidateId))
 }
 
 export async function getScreening(screeningId) {
-  const response = await fetch(`${BASE}/api/screenings/${screeningId}`)
-  if (!response.ok) throw new Error(`API error ${response.status}: ${response.statusText}`)
-  return response.json()
+  return resolveDemo(getDemoScreening(screeningId))
 }
 
 export async function startScreening(candidateId) {
-  const response = await fetch(`${BASE}/api/screenings`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ candidateId }),
-  })
-  if (!response.ok) throw new Error(`API error ${response.status}: ${response.statusText}`)
-  return response.json()
+  return resolveDemo(createDemoScreening(candidateId))
 }
