@@ -1,11 +1,47 @@
 import { Router } from "express";
 import { get, run } from "../db.js";
 import { triggerScreeningCall } from "../bolna.js";
+import {
+  INTERNAL_ERROR,
+  SCREENING_NOT_FOUND,
+  formatErrorResponse,
+  formatIntelligenceReport,
+  formatScreeningDetail
+} from "../formatters.js";
 
 const router = Router();
 
-function parseJsonField(value) {
-  return value ? JSON.parse(value) : null;
+function parseTranscriptField(value) {
+  if (Array.isArray(value)) {
+    return value;
+  }
+
+  if (typeof value !== "string") {
+    return [];
+  }
+
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function parseReportField(value) {
+  if (value == null) {
+    return null;
+  }
+
+  if (typeof value !== "string") {
+    return value;
+  }
+
+  try {
+    return JSON.parse(value);
+  } catch {
+    return null;
+  }
 }
 
 router.post("/screenings", async (req, res) => {
@@ -77,21 +113,30 @@ router.post("/screenings", async (req, res) => {
 
 router.get("/screenings/:screeningId", async (req, res) => {
   try {
+    const { screeningId } = req.params;
     const screening = await get(
       "SELECT * FROM screenings WHERE id = ?",
-      [req.params.screeningId]
+      [screeningId]
     );
 
     if (!screening) {
-      return res.status(404).json({ error: "Screening not found" });
+      return res.status(404).json(
+        formatErrorResponse(
+          SCREENING_NOT_FOUND,
+          `No screening found with id: ${screeningId}`,
+          404
+        )
+      );
     }
 
-    screening.transcript_json = parseJsonField(screening.transcript_json);
-    screening.analysis_report = parseJsonField(screening.analysis_report);
+    const transcript = parseTranscriptField(screening.transcript_json);
+    const report = formatIntelligenceReport(parseReportField(screening.analysis_report));
 
-    return res.status(200).json(screening);
-  } catch (error) {
-    return res.status(500).json({ error: error.message });
+    return res.status(200).json(formatScreeningDetail(screening, transcript, report));
+  } catch {
+    return res
+      .status(500)
+      .json(formatErrorResponse(INTERNAL_ERROR, "Failed to load screening.", 500));
   }
 });
 
